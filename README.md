@@ -3,11 +3,10 @@ Open-world block survival set in 2010, after the outbreak. Infinite seeded world
 
 During the day you scavenge. At night the horde comes out, and if zombies **see light** they rush you and tear through anything in their way.
 
-## Easiest upload: ONE file
-`dist/index.html` is the whole game packed into a single file: code, textures, models, sounds and mods.
-- **GitHub Pages:** upload only that one `index.html` to your repo, then turn on Settings → Pages.
-- **Offline:** just double-click it. It works without the .bat.
-- **After you edit textures or code:** run `python tools/build_single.py` to rebuild it, or ask Claude to rebuild it.
+## Two HTML files
+- **`index.html`** is the whole game packed into ONE file (code, textures, models, sounds, mods). This is what GitHub Pages opens, and it works even if the folders never upload. Double-click it to play offline too.
+- **`dev.html`** is the editing version. It reads straight from the folders, so your texture/code changes show up instantly. Open it with **`Play DeadCraft.bat`**.
+- **After you edit textures or code:** run `python tools/build_single.py` to rebuild `index.html`, or ask Claude to rebuild it. Then upload the new `index.html`.
 
 ## Play
 - **iPhone / iPad (and Android):** open your GitHub Pages link in Safari. For full screen, tap **Share → Add to Home Screen** and launch DeadCraft from the home screen. It plays in landscape with touch controls:
@@ -16,7 +15,7 @@ During the day you scavenge. At night the horde comes out, and if zombies **see 
   - Buttons: JUMP, HIT/FIRE, USE/AIM/EAT, SNEAK (EXIT in a car), BAG (inventory), TORCH, DROP and pause.
 - **Windows:** double-click **`Play DeadCraft.bat`**. It starts a tiny local server and opens your browser. Keep the black window open while you play.
 - **Online:** upload this whole folder to a GitHub repo, then go to Settings → Pages → `main` / root. Open `https://<you>.github.io/<repo>/`.
-- Use Chrome or Edge with a mouse and keyboard. Double-clicking `index.html` won't work, because browsers block textures from local files.
+- Use Chrome or Edge with a mouse and keyboard. Double-clicking `dev.html` won't work (browsers block textures from local files), but `index.html` does.
 
 **Controls:**
 
@@ -56,7 +55,7 @@ During the day you scavenge. At night the horde comes out, and if zombies **see 
 | **Zombie model** | `models/zombie.geo.json` (open in **Blockbench** as a Bedrock model) |
 | **UI colours / font / slot size / roundness** | `css/theme.css` |
 | **Zombies-hunting-you icon** (top left) | `textures/gui/zombie_icon.png` (any size, square looks best) |
-| **UI layout** | `css/ui.css`, `index.html` |
+| **UI layout** | `css/ui.css`, `dev.html` |
 | **Blocks** (hardness, drops, which tool…) | `js/data/blocks.js` |
 | **Items & tools** (damage, durability) | `js/data/items.js` |
 | **Crafting recipes** | `js/data/recipes.js` |

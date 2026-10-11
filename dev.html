@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DeadCraft">
+<meta name="description" content="DeadCraft — open-world zombie survival in blocks. 2010, after the outbreak.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<title>DeadCraft</title>
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/ui.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div id="nightTint"></div>
+  <div id="underwater" class="hidden"></div>
+  <div id="vignette"></div>
+  <div id="crosshair"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="18"/></svg></div>
+  <div id="clock"></div>
+  <div id="alert" class="hidden">THEY SEE YOUR LIGHT</div>
+  <div id="hunters" class="hidden" title="Zombies hunting you"><img src="textures/gui/zombie_icon.png" alt=""><span id="huntersN">0</span><i id="huntBar"><b></b></i></div>
+  <div id="notify"></div>
+  <div id="carHud" class="hidden"><b id="carName"></b><span id="carSpeed"></span><span class="fuel"><i id="carFuel"></i></span><small id="carInfo"></small></div>
+  <div id="itemName"></div>
+  <div id="hotbarWrap"><div id="stats"><div id="hearts"></div><div id="hunger"></div></div><div class="hotrow2"><div id="offSlot" class="slot hidden"></div><div id="hotbar"></div></div></div>
+  <div id="debug" class="hidden"></div>
+</div>
+<div id="clickToPlay" class="screen hidden" style="background:rgba(0,0,0,.35);cursor:pointer"><div class="panel" style="text-align:center"><h2 style="margin:0">Click to play</h2><p style="color:var(--ui-text-dim);margin:8px 0 0">WASD move · Mouse look · E inventory · Esc pause</p></div></div>
+
+<div id="rotateWarn" class="screen hidden" style="z-index:300;background:#000"><div class="menu" style="text-align:center"><div class="logo" style="font-size:44px">DEAD<span>CRAFT</span></div><p class="tagline" style="margin-top:20px">Turn your phone sideways to play</p></div></div>
+<div id="glFail" class="screen solid hidden" style="z-index:310"><div class="menu panel" style="text-align:center"><h2>Can't start 3D graphics</h2><p style="color:var(--ui-text-dim);line-height:1.5">Your browser blocked WebGL. Try Chrome, Edge or Safari, update your browser, or turn on hardware acceleration.</p></div></div>
+
+<!-- ============ INVENTORY ============ -->
+<div id="invScreen" class="screen hidden"></div>
+<div id="cursorItem" class="hidden"></div>
+<div id="tooltip" class="hidden"></div>
+
+<!-- ============ MENUS ============ -->
+<div id="boot" class="screen solid"><div class="logo">DEAD<span>CRAFT</span></div><p class="tagline" id="bootMsg">Loading…</p></div>
+
+<div id="title" class="screen solid hidden">
+  <div class="warn hidden" id="fileWarn"><b>Heads up:</b> browsers block textures when you double-click index.html. Start the game with <b>Play DeadCraft.bat</b> (Windows) or open it from your GitHub Pages link.</div>
+  <div class="logo">DEAD<span>CRAFT</span></div>
+  <div class="splash" id="splash"></div>
+  <div class="tagline">After the outbreak · 2010</div>
+  <div class="menu">
+    <button class="btn" id="bPlay">Singleplayer</button>
+    <div class="row"><button class="btn" id="bOptions">Options</button><button class="btn" id="bMods">Mods</button></div>
+    <button class="btn" id="bHelp">How to Play</button>
+  </div>
+  <div id="a2hs" class="hidden tip">For full screen on iPhone: tap <b>Share</b> → <b>Add to Home Screen</b>, then open DeadCraft from your home screen.</div>
+  <div class="version">DeadCraft v0.5 · made with GOZA</div>
+</div>
+
+<div id="worlds" class="screen solid hidden"><div class="menu panel">
+  <h2>Select World</h2>
+  <div class="worldlist" id="worldList"></div>
+  <div class="row"><button class="btn" id="bPlaySel">Play</button><button class="btn" id="bCreate">Create New</button></div>
+  <div class="row"><button class="btn danger" id="bDelete">Delete</button><button class="btn" data-back="title">Back</button></div>
+</div></div>
+
+<div id="create" class="screen solid hidden"><div class="menu panel">
+  <h2>Create New World</h2>
+  <label class="lbl">World name</label><input class="field" id="wName" maxlength="40">
+  <label class="lbl">Seed (leave blank for random)</label><input class="field" id="wSeed" maxlength="40" placeholder="e.g. outbreak2010">
+  <button class="btn" id="bDoCreate">Create World</button>
+  <button class="btn" data-back="worlds">Cancel</button>
+</div></div>
+
+<div id="options" class="screen solid hidden"><div class="menu panel">
+  <h2>Options</h2>
+  <div class="slider"><label class="lbl">Render distance <span class="v" id="oRDV"></span></label><input type="range" id="oRD" min="2" max="12" step="1"></div>
+  <div class="slider"><label class="lbl">Field of view <span class="v" id="oFovV"></span></label><input type="range" id="oFov" min="50" max="110" step="1"></div>
+  <div class="slider"><label class="lbl">Look sensitivity <span class="v" id="oSensV"></span></label><input type="range" id="oSens" min="0.2" max="3" step="0.05"></div>
+  <div class="slider"><label class="lbl">Resolution <span class="v" id="oScaleV"></span></label><input type="range" id="oScale" min="0.5" max="1" step="0.05"></div>
+  <button class="btn" id="oShaders">Shaders</button>
+  <button class="btn" id="bOptDone">Done</button>
+</div></div>
+
+<div id="help" class="screen solid hidden"><div class="menu panel" style="width:min(640px,94vw)">
+  <h2>How to Survive</h2>
+  <p style="color:var(--ui-text-dim);line-height:1.5;margin-top:0">Daylight is for scavenging. A few slow zombies roam. At <b style="color:var(--ui-danger)">night</b> the horde comes out — if they <b style="color:var(--ui-danger)">see light</b> they rush you and tear down anything in their way. Hole up in a building, board up the doors and windows with planks, and stay dark.</p>
+  <p class="touchonly" style="color:var(--ui-text-dim);line-height:1.6"><b style="color:#fff">Touch:</b> left thumb = move (push all the way to sprint) · drag right side = look · <b style="color:#fff">tap</b> = place / use · <b style="color:#fff">hold</b> = mine / attack · buttons for jump, hit/fire, use/aim/eat, sneak (exit car), bag, torch, drop.</p>
+  <div class="keys">
+    <div><b>W A S D</b> Move</div><div><b>Space</b> Jump / climb</div><div><b>R / W W</b> Sprint</div><div><b>Shift</b> Sneak</div>
+    <div><b>Left click</b> Mine / attack</div><div><b>Right click</b> Place / use</div><div><b>E</b> Inventory</div><div><b>1-9 / wheel</b> Hotbar</div>
+    <div><b>Q</b> Drop item (Shift+Q stack)</div><div><b>F</b> Torch to left hand</div><div><b>Right click (gun)</b> Aim</div><div><b>F3</b> Debug info</div><div><b>F1</b> Hide HUD</div><div><b>T</b> Show/hide clock</div><div><b>Right click car</b> Get in</div><div><b>Shift</b> Get out of car</div><div><b>Esc</b> Pause</div>
+  </div>
+  <p style="color:var(--ui-text-dim);line-height:1.5">Punch trees → planks → crafting table → wooden tools. Mine down for cobblestone, coal and iron. Coal + stick = torches. Break supply crates in buildings for loot.</p>
+  <button class="btn" data-back="title">Back</button>
+</div></div>
+
+<div id="mods" class="screen solid hidden"><div class="menu panel">
+  <h2>Mods</h2><ul class="mods" id="modList"></ul>
+  <button class="btn" data-back="title">Back</button>
+</div></div>
+
+<div id="loading" class="screen solid hidden"><div class="menu" style="text-align:center">
+  <div class="logo" style="font-size:56px">DEAD<span>CRAFT</span></div>
+  <p class="tagline" id="loadMsg" style="margin:16px 0 0">Generating world…</p>
+  <div class="bar"><i id="loadBar"></i></div>
+</div></div>
+
+<div id="pause" class="screen hidden"><div class="menu">
+  <h2>Game Paused</h2>
+  <button class="btn" id="bResume">Back to Game</button>
+  <button class="btn" id="bPauseOpt">Options</button>
+  <button class="btn danger" id="bQuit">Save &amp; Quit to Title</button>
+</div></div>
+
+<div id="death" class="screen death hidden"><div class="menu" style="text-align:center">
+  <h1>YOU DIED</h1><p id="deathInfo" style="color:#fff;font-size:18px"></p>
+  <button class="btn" id="bRespawn">Respawn</button>
+  <button class="btn" id="bDeathQuit">Title Screen</button>
+</div></div>
+
+<!-- ============ SCRIPTS (order matters) ============ -->
+<script src="js/lib/three.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/data/blocks.js"></script>
+<script src="js/data/items.js"></script>
+<script src="js/data/recipes.js"></script>
+<script src="js/data/loot.js"></script>
+<script src="js/worldgen.js"></script>
+<script src="js/world.js"></script>
+<script src="js/textures.js"></script>
+<script src="js/models.js"></script>
+<script src="js/mesher.js"></script>
+<script src="js/render.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/save.js"></script>
+<script src="js/player.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/ui.js"></script>
+<script src="sounds/sounds.js"></script>
+<script src="js/drops.js"></script>
+<script src="js/viewmodel.js"></script>
+<script src="js/data/vehicles.js"></script>
+<script src="js/vehicles.js"></script>
+<script src="js/touch.js"></script>
+<script src="mods/mods.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
