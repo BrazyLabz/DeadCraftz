@@ -1,6 +1,6 @@
 /* Offline support: always tries the network first (so GitHub Pages updates show
    up right away) and falls back to the cached copy when you're offline. */
-const CACHE = 'deadcraft-v5';
+const CACHE = 'deadcraft-v6';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== CACHE).map(x => caches.delete(x)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {
